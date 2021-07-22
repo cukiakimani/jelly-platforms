@@ -37,6 +37,9 @@ public class JellyPlatform : MonoBehaviour
     private CornerShape lastShape;
     private bool grabbing;
     private bool hasPolygonShape;
+
+    [Header("Debug")] public bool BreakOnDeform;
+    
     private void Start()
     {
         polygonShape = GetComponent<Polygon>();
@@ -48,12 +51,13 @@ public class JellyPlatform : MonoBehaviour
         CreatePoints();
         UpdateSettings();
     }
-
+    
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
             PushAwayFromMouse();
+            DebugHelpers.BreakIf(BreakOnDeform);
         }
 
         if (Input.GetMouseButtonDown(1))
@@ -70,6 +74,15 @@ public class JellyPlatform : MonoBehaviour
         if (Input.GetMouseButtonUp(1))
         {
             grabbing = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            CycleThroughPoints((index, point) =>
+            {
+                var springPoint = springPoints[index];
+                springPoint.Anchor = springPoint.Origin;
+            });
         }
 
         bool changedShapeStyle = lastCornerStyle != CornerStyle;
@@ -110,7 +123,7 @@ public class JellyPlatform : MonoBehaviour
 
         CycleThroughPoints((index, point) =>
         {
-            springPoints.Add(new SpringPoint {Anchor = point, Position = point});
+            springPoints.Add(new SpringPoint {Anchor = point, Origin = point, Position = point});
             
             if (hasPolygonShape)
                 polygonShape.AddPoint(point);
@@ -204,10 +217,16 @@ public class JellyPlatform : MonoBehaviour
             float s = springForceCurve.Evaluate(t);
             float forceMagnitude = Mathf.Lerp(0f, springForceMagnitude, s);
             int j = inRadiusPoints[i];
-            springPoints[j].Velocity += direction * forceMagnitude;
-
+            // springPoints[j].Velocity += direction * forceMagnitude;
+            springPoints[j].Anchor += direction * forceMagnitude; 
+            
+            DebugHelpers.DrawCircle(springPoints[j].Position, Color.yellow, 0.1f);
+                
             j = inRadiusPoints[inRadiusPoints.Count - 1 - i];
-            springPoints[j].Velocity += direction * forceMagnitude;
+            // springPoints[j].Velocity += direction * forceMagnitude;
+            springPoints[j].Anchor += direction * forceMagnitude;
+            
+            DebugHelpers.DrawCircle(springPoints[j].Position, Color.yellow, 0.1f);
         }
     }
 
