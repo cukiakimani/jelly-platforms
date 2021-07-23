@@ -1,18 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SweetLibs;
+using DG.Tweening;
 
 public class Squish : MonoBehaviour
 {
     [SerializeField] private float shootSpeed;
 
+    [SerializeField] private float pulseMaxRadius;
+
+    [SerializeField] private float pulseTime = 1f;
+    [SerializeField] private Ease pulseEase;
+
     private bool deform;
     private bool shooting;
+    private bool pulsing;
     private Vector3 shootPosition;
     private Vector3 shootDirection;
+    private float pulseRadius;
 
     private void Update()
     {
+        if (pulsing)
+            return;
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0f;
         transform.position = deform ? transform.position : mousePos;
@@ -49,17 +61,33 @@ public class Squish : MonoBehaviour
 
             transform.position = nextPosition;
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collider)
-    {
-        // var deformablePlatform = collider.GetComponent<DeformablePlatform>();
+        if (Input.GetMouseButtonDown(1))
+        {
+            pulsing = true;
 
-        // if (deformablePlatform == null || !deform)
-        //     return;
+            var pulse = DOTween.To(() => pulseRadius, x => pulseRadius = x, pulseMaxRadius, pulseTime);
+            pulse.SetEase(pulseEase);
+            
+            pulse.OnUpdate(() =>
+            {
+                DebugHelpers.DrawCircle(transform.position, Color.red, pulseRadius);
+                var collider = Physics2D.OverlapCircle(transform.position, pulseRadius);
+                if (collider)
+                {
+                    var deformablePlatform = collider.GetComponent<DeformablePlatform>();
+                    if (deformablePlatform)
+                    {
+                        deformablePlatform.Reform();
+                    }
+                }
+            });
 
-        // var deformPosition = transform.position - shootDirection * 0.2f;
-        // deformablePlatform.Deform(transform.position);
-        // deform = shooting = false;
+            pulse.OnComplete(() =>
+            {
+                pulsing = false;
+                pulseRadius = 0f;
+            });
+        }
     }
 }

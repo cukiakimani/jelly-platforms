@@ -64,10 +64,10 @@ public class DeformablePlatform : MonoBehaviour
         //     DebugHelpers.BreakIf(BreakOnDeform);
         // }
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Reform();
-        }
+        // if (Input.GetKeyDown(KeyCode.R))
+        // {
+        //     Reform();
+        // }
 
         bool changedShapeStyle = lastCornerStyle != CornerStyle;
         bool changedFidelity = lastCurveFidelity != curveFidelity || straightFidelity != lastStraightFidelity;
@@ -181,7 +181,7 @@ public class DeformablePlatform : MonoBehaviour
     {
         DebugHelpers.BreakIf(BreakOnDeform);
         DebugHelpers.DebugPoint(deformPosition, Color.magenta, 0.5f);
-        
+
         // find all points in radius
         inRadiusPoints.Clear();
 
