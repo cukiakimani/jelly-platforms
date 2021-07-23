@@ -137,7 +137,8 @@ GameObject:
   - component: {fileID: 262289502}
   - component: {fileID: 262289501}
   - component: {fileID: 262289506}
-  m_Layer: 0
+  - component: {fileID: 262289507}
+  m_Layer: 6
   m_Name: DeformablePlatform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -247,13 +248,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1eac8554368ed4cba956c7a8b7807b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deformRadius: 1.63
+  deformRadius: 3
   CornerStyle: 1
   Shape: {fileID: 11400000, guid: 82b78e46d6daa404f9f1dbe8a0331d8d, type: 2}
   straightFidelity: 40
   curveFidelity: 15
   cornerLength: 0.97
-  springForceMagnitude: 1
+  springForceMagnitude: 2
   springForceCurve:
     serializedVersion: 2
     m_Curve:
@@ -326,6 +327,27 @@ PolygonCollider2D:
       - {x: -0.5877852, y: -0.80901706}
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
+--- !u!50 &262289507
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 262289500}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!850595691 &577762630
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -483,6 +505,8 @@ GameObject:
   - component: {fileID: 1154710981}
   - component: {fileID: 1154710980}
   - component: {fileID: 1154710978}
+  - component: {fileID: 1154710984}
+  - component: {fileID: 1154710983}
   m_Layer: 0
   m_Name: Squish
   m_TagString: Untagged
@@ -539,7 +563,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1154710977}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.46, y: 1.02, z: -0.003743291}
+  m_LocalPosition: {x: 1.76, y: 5.13, z: -0.003743291}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -567,7 +591,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blendMode: 1
   scaleMode: 0
-  color: {r: 1, g: 1, b: 1, a: 1}
+  color: {r: 1, g: 1, b: 1, a: 0.26666668}
   detailLevel: 2
   zTest: 4
   zOffsetFactor: 0
@@ -613,4 +637,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e4c4f707777843cb91ded3aab73cab4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Radius: 1
+  shootSpeed: 50
+--- !u!50 &1154710983
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154710977}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!58 &1154710984
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154710977}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.3

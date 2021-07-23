@@ -55,22 +55,18 @@ public class DeformablePlatform : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mousePos.z = 0f;
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //     mousePos.z = 0f;
 
-            Deform(mousePos);
-            DebugHelpers.BreakIf(BreakOnDeform);
-        }
+        //     Deform(mousePos);
+        //     DebugHelpers.BreakIf(BreakOnDeform);
+        // }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            CycleThroughPoints((index, point) =>
-            {
-                var springPoint = springPoints[index];
-                springPoint.Anchor = springPoint.Origin;
-            });
+            Reform();
         }
 
         bool changedShapeStyle = lastCornerStyle != CornerStyle;
@@ -172,8 +168,20 @@ public class DeformablePlatform : MonoBehaviour
         }
     }
 
-    private void Deform(Vector3 deformPosition)
+    public void Reform()
     {
+        CycleThroughPoints((index, point) =>
+            {
+                var springPoint = springPoints[index];
+                springPoint.Anchor = springPoint.Origin;
+            });
+    }
+
+    public void Deform(Vector3 deformPosition)
+    {
+        DebugHelpers.BreakIf(BreakOnDeform);
+        DebugHelpers.DebugPoint(deformPosition, Color.magenta, 0.5f);
+        
         // find all points in radius
         inRadiusPoints.Clear();
 
