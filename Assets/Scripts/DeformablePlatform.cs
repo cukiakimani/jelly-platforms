@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class DeformablePlatform : MonoBehaviour
 {
-    [SerializeField] private MouseCursor mouseCursor;
+    [SerializeField] private float deformRadius;
 
     [Space, SerializeField] public CornerStyle CornerStyle;
 
@@ -20,9 +20,7 @@ public class DeformablePlatform : MonoBehaviour
     [Header("Spring"), SerializeField] private float springForceMagnitude = 50f;
     [SerializeField] public AnimationCurve springForceCurve;
 
-    [Space, SerializeField, Range(0.01f, 1f)]
-    private float percDecay = 0.4f;
-
+    [Space, SerializeField, Range(0.01f, 1f)] private float percDecay = 0.4f;
     [SerializeField, Range(1f, 10f)] private float freq = 5f;
     [SerializeField, Range(0.1f, 5f)] private float timeDecay = 3f;
 
@@ -35,45 +33,35 @@ public class DeformablePlatform : MonoBehaviour
     private int lastCurveFidelity;
     private float lastCornerLength;
     private CornerShape lastShape;
-    private bool grabbing;
     private bool hasPolygonShape;
 
+    private PolygonCollider2D collider;
+    private Vector2[] colliderPoints;
+
     [Header("Debug")] public bool BreakOnDeform;
-    
+
     private void Start()
     {
+        collider = GetComponent<PolygonCollider2D>();
         polygonShape = GetComponent<Polygon>();
         hasPolygonShape = polygonShape != null;
-        
+
         springPoints = new List<SpringPoint>();
         inRadiusPoints = new List<int>();
 
         CreatePoints();
         UpdateSettings();
     }
-    
+
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Deform(mouseCursor.transform.position);
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePos.z = 0f;
+
+            Deform(mousePos);
             DebugHelpers.BreakIf(BreakOnDeform);
-        }
-
-        if (Input.GetMouseButtonDown(1))
-        {
-            GrabPointsForPulling();
-            grabbing = true;
-        }
-
-        if (Input.GetMouseButton(1))
-        {
-            PullGrabbedPoints();
-        }
-
-        if (Input.GetMouseButtonUp(1))
-        {
-            grabbing = false;
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -98,6 +86,8 @@ public class DeformablePlatform : MonoBehaviour
         UpdateSettings();
 
         Cursor.visible = false;
+
+        UpdateColliderPoints();
     }
 
     private void FixedUpdate()
@@ -117,17 +107,35 @@ public class DeformablePlatform : MonoBehaviour
     private void CreatePoints()
     {
         springPoints.Clear();
-        
+
         if (hasPolygonShape)
             polygonShape.points.Clear();
 
         CycleThroughPoints((index, point) =>
         {
-            springPoints.Add(new SpringPoint {Anchor = point, Origin = point, Position = point});
-            
+            springPoints.Add(new SpringPoint { Anchor = point, Origin = point, Position = point });
+
             if (hasPolygonShape)
                 polygonShape.AddPoint(point);
         });
+
+        CreatePolygonCollider();
+    }
+
+    private void CreatePolygonCollider()
+    {
+        colliderPoints = new Vector2[springPoints.Count];
+        UpdateColliderPoints();
+    }
+
+    private void UpdateColliderPoints()
+    {
+        for (int i = 0; i < colliderPoints.Length; i++)
+        {
+            colliderPoints[i] = springPoints[i].Position;
+        }
+
+        collider.points = colliderPoints;
     }
 
     private void UpdatePoints()
@@ -137,14 +145,9 @@ public class DeformablePlatform : MonoBehaviour
 
         CycleThroughPoints((index, point) =>
         {
-            var springPoint = springPoints[index];
+            var springPoint = springPoints[index]; springPoint.Position = Spring.Vector3Spring(springPoint.Position, ref springPoint.Velocity,
+                     springPoint.Anchor, zeta, omega, Time.deltaTime);
 
-            if (!(grabbing && inRadiusPoints.Contains(index)))
-            {
-                springPoint.Position = Spring.Vector3Spring(springPoint.Position, ref springPoint.Velocity,
-                    springPoint.Anchor, zeta, omega, Time.deltaTime);
-            }
-            
             if (hasPolygonShape)
                 polygonShape.SetPointPosition(index, springPoint.Position);
         });
@@ -178,7 +181,7 @@ public class DeformablePlatform : MonoBehaviour
         {
             var springPoint = springPoints[i];
 
-            if (Vector3.Distance(springPoint.Position, deformPosition) <= mouseCursor.Radius)
+            if (Vector3.Distance(springPoint.Position, deformPosition) <= deformRadius)
             {
                 inRadiusPoints.Add(i);
             }
@@ -214,70 +217,17 @@ public class DeformablePlatform : MonoBehaviour
         // spring away from the center of the mouse position 
         for (int i = 0; i < sideCount; i++)
         {
-            float t = i / (float) sideCount;
+            float t = i / (float)sideCount;
             float s = springForceCurve.Evaluate(t);
             float forceMagnitude = Mathf.Lerp(0f, springForceMagnitude, s);
-            
+
             int j = inRadiusPoints[i];
-            springPoints[j].Anchor += direction * forceMagnitude; 
+            springPoints[j].Anchor += direction * forceMagnitude;
             DebugHelpers.DrawCircle(springPoints[j].Position, Color.yellow, 0.1f);
-                
+
             j = inRadiusPoints[inRadiusPoints.Count - 1 - i];
             springPoints[j].Anchor += direction * forceMagnitude;
             DebugHelpers.DrawCircle(springPoints[j].Position, Color.yellow, 0.1f);
-        }
-    }
-
-    private void GrabPointsForPulling()
-    {
-        // find all points in radius
-        inRadiusPoints.Clear();
-
-        for (int i = 0; i < springPoints.Count; i++)
-        {
-            var springPoint = springPoints[i];
-
-            if (Vector3.Distance(springPoint.Position, mouseCursor.transform.position) <= mouseCursor.Radius)
-            {
-                inRadiusPoints.Add(i);
-            }
-        }
-
-        if (inRadiusPoints.Count == 0)
-            return;
-
-        // find the center of those points (just add an extra one if even)
-        if (inRadiusPoints.Count % 2 == 0)
-        {
-            int addedIndex = MathHelpers.Wrap(inRadiusPoints[inRadiusPoints.Count - 1] + 1, 0,
-                inRadiusPoints.Count - 1);
-
-            inRadiusPoints.Add(addedIndex);
-        }
-    }
-
-    private void PullGrabbedPoints()
-    {
-        if (springPoints.Count == 0)
-            return;
-
-        int sideCount = inRadiusPoints.Count / 2;
-        var midPoint = springPoints[inRadiusPoints[sideCount]];
-
-        midPoint.Position = mouseCursor.transform.position;
-        Vector3 direction = midPoint.Position - midPoint.Anchor;
-
-        // spring away from the center of the mouse position 
-        for (int i = 0; i < sideCount; i++)
-        {
-            float t = i / (float) sideCount;
-            float s = springForceCurve.Evaluate(t);
-
-            int j = inRadiusPoints[i];
-            springPoints[j].Position = springPoints[j].Anchor + direction.normalized * direction.magnitude * s;
-
-            j = inRadiusPoints[inRadiusPoints.Count - 1 - i];
-            springPoints[j].Position = springPoints[j].Anchor + direction.normalized * direction.magnitude * s;
         }
     }
 
@@ -342,7 +292,7 @@ public class DeformablePlatform : MonoBehaviour
 
             for (int j = 0; j <= curveFidelity; j++)
             {
-                float t = j / (float) (curveFidelity + 1);
+                float t = j / (float)(curveFidelity + 1);
                 Vector2 point = CalculateBezierPoint(t, b1, b, b, b2);
                 doThis(index, point);
                 index++;
