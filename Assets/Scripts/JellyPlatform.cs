@@ -106,7 +106,7 @@ public class JellyPlatform : MonoBehaviour
         springPoints.Clear();
         
         if (hasPolygonShape)
-            polygonShape.PolyPoints.Clear();
+            polygonShape.points.Clear();
 
         CycleThroughPoints((index, point) =>
         {

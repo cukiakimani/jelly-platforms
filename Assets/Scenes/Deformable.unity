@@ -246,7 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1eac8554368ed4cba956c7a8b7807b49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseCursor: {fileID: 0}
+  mouseCursor: {fileID: 1154710978}
   CornerStyle: 1
   Shape: {fileID: 11400000, guid: 82b78e46d6daa404f9f1dbe8a0331d8d, type: 2}
   straightFidelity: 40
