@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SweetLibs;
 using DG.Tweening;
+using Shapes;
 
 public class Squish : MonoBehaviour
 {
@@ -12,9 +13,11 @@ public class Squish : MonoBehaviour
 
     [SerializeField] private float pulseTime = 1f;
     [SerializeField] private Ease pulseEase;
+    [SerializeField] private Color pulseColor;
 
     [Space, SerializeField] private Transform blob1;
     [SerializeField] private Transform blob2;
+
 
     [Space, SerializeField] private float idleSize1 = 0.08f;
     [SerializeField] private float growSize1 = 0.2f;
@@ -33,11 +36,15 @@ public class Squish : MonoBehaviour
     private Vector3 shootPosition;
     private Vector3 shootDirection;
     private float pulseRadius;
+    private Disc disc;
 
     private void Start()
     {
         blob1.transform.localPosition = new Vector3(0f, 0f, idleSize1);
         blob2.transform.localPosition = new Vector3(0f, 0f, 0f);
+
+        disc = GetComponent<Disc>();
+        disc.Radius = 0f;
     }
 
     private void Update()
@@ -103,7 +110,11 @@ public class Squish : MonoBehaviour
 
             pulse.OnUpdate(() =>
             {
-                DebugHelpers.DrawCircle(transform.position, Color.red, pulseRadius);
+                disc.Radius = pulseRadius;
+                Color clearPulseColor = pulseColor;
+                clearPulseColor.a = 0f;
+                disc.Color = Color.Lerp(pulseColor, clearPulseColor, pulseRadius / pulseMaxRadius);
+
                 var collider = Physics2D.OverlapCircle(transform.position, pulseRadius);
                 if (collider)
                 {
