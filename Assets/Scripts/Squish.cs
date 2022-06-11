@@ -33,6 +33,7 @@ public class Squish : MonoBehaviour
     private bool deform;
     private bool shooting;
     private bool pulsing;
+    private bool reform;
     private Vector3 shootPosition;
     private Vector3 shootDirection;
     private float pulseRadius;
@@ -104,7 +105,8 @@ public class Squish : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             pulsing = true;
-
+            reform = true;
+            
             var pulse = DOTween.To(() => pulseRadius, x => pulseRadius = x, pulseMaxRadius, pulseTime);
             pulse.SetEase(pulseEase);
 
@@ -119,9 +121,10 @@ public class Squish : MonoBehaviour
                 if (collider)
                 {
                     var deformablePlatform = collider.GetComponent<DeformablePlatform>();
-                    if (deformablePlatform)
+                    if (deformablePlatform && reform)
                     {
                         deformablePlatform.Reform();
+                        reform = false;
                     }
                 }
             });

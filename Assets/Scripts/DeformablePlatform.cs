@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class DeformablePlatform : MonoBehaviour
 {
+    [SerializeField] private CameraShaker cameraShaker;
     [SerializeField] private float deformRadius;
 
     [Space, SerializeField] public CornerStyle CornerStyle;
@@ -175,12 +176,15 @@ public class DeformablePlatform : MonoBehaviour
                 var springPoint = springPoints[index];
                 springPoint.Anchor = springPoint.Origin;
             });
+
+        // cameraShaker.SpringSize();
     }
 
     public void Deform(Vector3 deformPosition)
     {
         DebugHelpers.BreakIf(BreakOnDeform);
         DebugHelpers.DebugPoint(deformPosition, Color.magenta, 0.5f);
+        cameraShaker.Shake();
 
         // find all points in radius
         inRadiusPoints.Clear();
